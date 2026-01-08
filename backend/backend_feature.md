@@ -1,0 +1,6 @@
+- Add data annotations to TaskItem model for input validation
+- Implement comprehensive error handling with try-catch blocks
+- Add UserId validation and database constraint handling
+- Add logging for all CRUD operations
+- Configure model state validation with custom error responses
+- Add GetById endpoint for single task retrieval
