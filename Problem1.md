@@ -1,0 +1,1 @@
+When I run the app. I'm having this error "TypeError: tasks.map is not a function", The reason is I don't have an .env file yet and don't have a connection between the frontend and backend so i added VITE_API_BASE_URL
