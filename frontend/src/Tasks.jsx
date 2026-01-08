@@ -354,11 +354,7 @@ function Tasks() {
                       disabled={togglingId === task.id}
                       title={task.isDone ? "Mark as pending" : "Mark as done"}
                     >
-                      {togglingId === task.id
-                        ? "..."
-                        : task.isDone
-                        ? "↩️"
-                        : "✓"}
+                      {togglingId === task.id ? "..." : task.isDone ? "↩" : "✓"}
                     </button>
                     <button
                       onClick={() => startEditing(task)}
