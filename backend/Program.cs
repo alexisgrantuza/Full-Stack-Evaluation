@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using TaskManager.Data;
 
 DotNetEnv.Env.Load();
@@ -6,7 +8,26 @@ DotNetEnv.Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Disable automatic model state validation to handle it manually
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .SelectMany(x => x.Value!.Errors)
+                .Select(x => x.ErrorMessage)
+                .ToList();
+
+            return new BadRequestObjectResult(new
+            {
+                message = "Validation failed",
+                errors = errors
+            });
+        };
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
