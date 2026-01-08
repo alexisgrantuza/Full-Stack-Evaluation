@@ -1,0 +1,1 @@
+it gives me an error about Tasks table, it means that relation "Tasks" does not exist means the database migration didn't run successfully. to solve it I created my own server and put the credentials on the appsettings.json "DefaultConnection"
