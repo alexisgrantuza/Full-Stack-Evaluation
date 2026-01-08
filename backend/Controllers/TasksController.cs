@@ -71,7 +71,7 @@ namespace TaskManager.API
 
         /// Create a new task
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TaskItem task)
+        public async Task<IActionResult> Create([FromBody] CreateTaskDto taskDto)
         {
             try
             {
@@ -88,26 +88,33 @@ namespace TaskManager.API
                     return BadRequest(new { message = "Validation failed", errors = errors });
                 }
 
-                // Validate task is not null
-                if (task == null)
+                // Validate task DTO is not null
+                if (taskDto == null)
                 {
                     _logger.LogWarning("Attempted to create task with null data");
                     return BadRequest(new { message = "Task data is required" });
                 }
 
                 // Validate Title is not empty or whitespace
-                if (string.IsNullOrWhiteSpace(task.Title))
+                if (string.IsNullOrWhiteSpace(taskDto.Title))
                 {
                     return BadRequest(new { message = "Title cannot be empty or whitespace" });
                 }
 
                 // Validate UserId exists
-                var userExists = await _context.Users.AnyAsync(u => u.Id == task.UserId);
+                var userExists = await _context.Users.AnyAsync(u => u.Id == taskDto.UserId);
                 if (!userExists)
                 {
-                    _logger.LogWarning("Attempted to create task with non-existent UserId {UserId}", task.UserId);
-                    return BadRequest(new { message = $"User with ID {task.UserId} does not exist" });
+                    _logger.LogWarning("Attempted to create task with non-existent UserId {UserId}", taskDto.UserId);
+                    return BadRequest(new { message = $"User with ID {taskDto.UserId} does not exist" });
                 }
+
+                var task = new TaskItem
+                {
+                    Title = taskDto.Title,
+                    IsDone = taskDto.IsDone,
+                    UserId = taskDto.UserId
+                };
 
                 _logger.LogInformation("Creating new task: {Title} for UserId {UserId}", task.Title, task.UserId);
                 _context.Tasks.Add(task);
@@ -137,7 +144,7 @@ namespace TaskManager.API
 
         /// Update an existing task
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] TaskItem updated)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateTaskDto updatedDto)
         {
             try
             {
@@ -159,15 +166,15 @@ namespace TaskManager.API
                     return BadRequest(new { message = "Validation failed", errors = errors });
                 }
 
-                // Validate updated task is not null
-                if (updated == null)
+                // Validate updated DTO is not null
+                if (updatedDto == null)
                 {
                     _logger.LogWarning("Attempted to update task with null data");
                     return BadRequest(new { message = "Task data is required" });
                 }
 
                 // Validate Title is not empty or whitespace
-                if (string.IsNullOrWhiteSpace(updated.Title))
+                if (string.IsNullOrWhiteSpace(updatedDto.Title))
                 {
                     return BadRequest(new { message = "Title cannot be empty or whitespace" });
                 }
@@ -181,21 +188,20 @@ namespace TaskManager.API
                     return NotFound(new { message = $"Task with ID {id} not found" });
                 }
 
-                // Validate UserId exists if it's being changed
-                if (task.UserId != updated.UserId)
+                // Validate UserId exists 
+                if (task.UserId != updatedDto.UserId)
                 {
-                    var userExists = await _context.Users.AnyAsync(u => u.Id == updated.UserId);
+                    var userExists = await _context.Users.AnyAsync(u => u.Id == updatedDto.UserId);
                     if (!userExists)
                     {
-                        _logger.LogWarning("Attempted to update task with non-existent UserId {UserId}", updated.UserId);
-                        return BadRequest(new { message = $"User with ID {updated.UserId} does not exist" });
+                        _logger.LogWarning("Attempted to update task with non-existent UserId {UserId}", updatedDto.UserId);
+                        return BadRequest(new { message = $"User with ID {updatedDto.UserId} does not exist" });
                     }
                 }
 
-                // Update task properties
-                task.Title = updated.Title;
-                task.IsDone = updated.IsDone;
-                task.UserId = updated.UserId;
+                task.Title = updatedDto.Title;
+                task.IsDone = updatedDto.IsDone;
+                task.UserId = updatedDto.UserId;
 
                 await _context.SaveChangesAsync();
 
